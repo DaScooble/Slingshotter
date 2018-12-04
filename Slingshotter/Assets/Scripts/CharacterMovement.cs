@@ -13,20 +13,36 @@ public class CharacterMovement : MonoBehaviour
         Cooling = 2,
         True = 3
     }
+
+    [Header("Physics Settings")]
     [SerializeField] Rigidbody physicalBody;
-    [SerializeField] Animator characterAnimator;
     [SerializeField] BoxCollider groundCollider;
     [SerializeField] LayerMask groundLayer;
+
+    [Header("Animation Settings")]
+    [SerializeField] Animator characterAnimator;
+    [SerializeField] GameObject armController;
+    [Header("Movement Settings")]
     [SerializeField] float speed;
+    [SerializeField] float turnSpeed;
     [SerializeField] float jumpHeight;
     [SerializeField] float jumpWait;
     JumpState isJumping = JumpState.False;
     bool canJump = true;
     Vector3 inputs;
+    float turnDir = 1f;
+    float turnProg;
+    const float turnOffset = 90f;
+    const float turnFrom = 0f;
+    const float turnTo = 180f;
+
     bool isGrounded;
     bool prevGrounded;
 
+    /* Debug stuff */
     int jumpCount = 0;
+    float currArmRotation = 0f;
+    float armRotationSpeed = 30f;
 
     void Start()
     {
@@ -39,9 +55,11 @@ public class CharacterMovement : MonoBehaviour
         inputs.x = Input.GetAxisRaw("Horizontal");
         inputs.y = Input.GetAxisRaw("Vertical");
 
-        bool prevGrounded = isGrounded;
+        prevGrounded = isGrounded;
         UpdateGroundStatus();
         CheckJumpCooldown();
+
+        UpdateCharacterDirection();
     }
 
     void FixedUpdate()
@@ -57,10 +75,18 @@ public class CharacterMovement : MonoBehaviour
             isJumping = JumpState.Cooldown;
     }
 
+    void LateUpdate()
+    {
+        // All custom animation overriding goes here.
+        armController.transform.rotation = Quaternion.Euler(currArmRotation, 0f, 0f);
+        currArmRotation += armRotationSpeed * Time.deltaTime;
+    }
+
     void CheckJumpCooldown()
     {
-        if (!prevGrounded && isGrounded && isJumping == JumpState.Cooldown)
+        if (!prevGrounded && isGrounded && isJumping != JumpState.Cooling)
         {
+            Debug.Log("Running jump cooldown, " + prevGrounded + ", " + isGrounded + ", " + isJumping.ToString());
             isJumping = JumpState.Cooling;
             StartCoroutine(Run.Delayed(jumpWait, () =>
             {
@@ -94,6 +120,25 @@ public class CharacterMovement : MonoBehaviour
             physicalBody.AddForce(jumpForce, ForceMode.Impulse);
             Debug.Log("Applying " + jumpForce + " force as jump " + ++jumpCount + ". Velocity is now " + physicalBody.velocity + " at time " + Time.time);
         }
+    }
+
+    void UpdateCharacterDirection()
+    {
+        float turnAmount = inputs.x;
+        if (turnAmount > 0)
+        {
+            turnDir = -turnSpeed;
+        }
+        else if (turnAmount < 0)
+        {
+            turnDir = turnSpeed;
+        }
+
+        turnProg += Time.deltaTime * turnDir;
+        turnProg = Mathf.Clamp(turnProg, 0f, 1f);
+
+        float newTurn = Mathf.Lerp(turnFrom, turnTo, turnProg);
+        physicalBody.rotation = Quaternion.Euler(0, newTurn + turnOffset, 0);
     }
 
     public void Move(Vector3 movement)

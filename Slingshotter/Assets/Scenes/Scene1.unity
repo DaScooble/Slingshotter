@@ -215,7 +215,7 @@ GameObject:
   - component: {fileID: 273608498}
   - component: {fileID: 273608497}
   - component: {fileID: 273608496}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Swing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,12 +294,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &399152203 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 4070787162055816011, guid: 6d87f410392ba614aaa33b789cb96e37,
-    type: 3}
-  m_PrefabInstance: {fileID: 4070787162292025826}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,12 +500,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   physicalBody: {fileID: 548401485}
-  characterAnimator: {fileID: 0}
   groundCollider: {fileID: 2040714079}
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
+  characterAnimator: {fileID: 0}
+  armController: {fileID: 0}
   speed: 5
+  turnSpeed: 0
   jumpHeight: 2
   jumpWait: 0.25
 --- !u!1 &563836730
@@ -644,12 +640,6 @@ Transform:
   m_Father: {fileID: 563836731}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &944224268 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 4070787163312181404, guid: 6d87f410392ba614aaa33b789cb96e37,
-    type: 3}
-  m_PrefabInstance: {fileID: 4070787162292025826}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &949226081
 GameObject:
   m_ObjectHideFlags: 0
@@ -1204,7 +1194,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1.0000001, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1943216081
 MeshRenderer:
@@ -1487,46 +1477,5 @@ PrefabInstance:
       propertyPath: physicalBody
       value: 
       objectReference: {fileID: 548401485}
-    - target: {fileID: 4070787163227176572, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: groundCollider
-      value: 
-      objectReference: {fileID: 399152203}
-    - target: {fileID: 4070787163227176572, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: characterAnimator
-      value: 
-      objectReference: {fileID: 944224268}
-    - target: {fileID: 5701236356555819167, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 13400000, guid: 4dd2e9b3e90fbeb429a713a2b4aa7ce8,
-        type: 2}
-    - target: {fileID: 4070787163319943032, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4070787163319943032, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4070787163319943032, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4070787163319943032, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4070787163319943032, guid: 6d87f410392ba614aaa33b789cb96e37,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6d87f410392ba614aaa33b789cb96e37, type: 3}

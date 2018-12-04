@@ -640,7 +640,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4070787163319444312}
-  m_LocalRotation: {x: -1.134464e-15, y: 0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0.050467554}
   m_LocalScale: {x: 0.78053564, y: 0.78053564, z: 0.7805357}
   m_Children: []
@@ -858,7 +858,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4070787163319444318}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 4dd2e9b3e90fbeb429a713a2b4aa7ce8, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.25
@@ -878,11 +878,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   physicalBody: {fileID: 4070787163227176573}
-  characterAnimator: {fileID: 4070787163312181404}
   groundCollider: {fileID: 4070787162055816011}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 768
+  characterAnimator: {fileID: 4070787163312181404}
+  armController: {fileID: 4070787163319444310}
   speed: 5
+  turnSpeed: 6
   jumpHeight: 2
   jumpWait: 0.25
