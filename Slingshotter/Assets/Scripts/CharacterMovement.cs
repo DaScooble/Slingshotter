@@ -21,7 +21,10 @@ public class CharacterMovement : MonoBehaviour
 
     [Header("Animation Settings")]
     [SerializeField] Animator characterAnimator;
-    [SerializeField] GameObject armController;
+    [SerializeField] Transform armController;
+    Transform armGoal;
+    Vector3 armControllerInitialPosition;
+    [SerializeField] GameObject goalDebugObject;
     [Header("Movement Settings")]
     [SerializeField] float speed;
     [SerializeField] float turnSpeed;
@@ -47,6 +50,11 @@ public class CharacterMovement : MonoBehaviour
     void Start()
     {
         physicalBody = GetComponent(typeof(Rigidbody)) as Rigidbody;
+        armControllerInitialPosition = armController.transform.localPosition;
+        armGoal = GameObject.Instantiate(goalDebugObject).transform;
+        // armGoal = new GameObject("Arm Goal").transform;
+        // armGoal.gameObject.AddComponent<MeshFilter>().mesh = ;
+        // armGoal.gameObject.AddComponent<MeshRenderer>();
     }
 
     void Update()
@@ -54,6 +62,15 @@ public class CharacterMovement : MonoBehaviour
         inputs = Vector3.zero;
         inputs.x = Input.GetAxisRaw("Horizontal");
         inputs.y = Input.GetAxisRaw("Vertical");
+
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = 10;
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
+
+        if (armGoal)
+        {
+            armGoal.position = Vector3.Lerp(armGoal.position, mouseWorldPos, 0.25f);
+        }
 
         prevGrounded = isGrounded;
         UpdateGroundStatus();
@@ -78,8 +95,36 @@ public class CharacterMovement : MonoBehaviour
     void LateUpdate()
     {
         // All custom animation overriding goes here.
-        armController.transform.rotation = Quaternion.Euler(currArmRotation, 0f, 0f);
-        currArmRotation += armRotationSpeed * Time.deltaTime;
+        // Vector3 mousePos = Input.mousePosition;
+        // mousePos.z = 10;
+        // Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
+        // Vector3 direction = (physicalBody.position - mouseWorldPos).normalized;
+        // // armController.transform.localPosition = (armControllerInitialPosition + (direction * 3f));
+        // armController.transform.localPosition = armController.transform.InverseTransformPoint(armController.transform.position + direction);
+
+
+        // armController.transform.rotation = Quaternion.Euler(currArmRotation, 0f, 0f);
+        // currArmRotation += armRotationSpeed * Time.deltaTime;
+    }
+
+    void OnAnimatorIK()
+    {
+        // Debug.Log("Executing OnAnimatorIK!");
+        if (characterAnimator != null)
+        {
+            if (armGoal != null)
+            {
+                // characterAnimator.SetLookAtWeight(1);
+                // characterAnimator.SetLookAtPosition(armGoal.position);
+
+                AvatarIKGoal targetIKGoal = AvatarIKGoal.RightHand;
+                // Debug.Log("Setting IKPosition for " + targetIKGoal + " to " + armGoal.position);
+                characterAnimator.SetIKPositionWeight(targetIKGoal, 1);
+                characterAnimator.SetIKRotationWeight(targetIKGoal, 1);
+                characterAnimator.SetIKPosition(targetIKGoal, armGoal.position);
+                characterAnimator.SetIKRotation(targetIKGoal, armGoal.rotation);
+            }
+        }
     }
 
     void CheckJumpCooldown()
