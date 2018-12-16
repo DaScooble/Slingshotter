@@ -22,9 +22,14 @@ public class CharacterMovement : MonoBehaviour
     [Header("Animation Settings")]
     [SerializeField] Animator characterAnimator;
     [SerializeField] Transform armController;
+    [SerializeField] float armStretchDistance;
+    [SerializeField] float armFollowSpeed;
     Transform armGoal;
-    Vector3 armControllerInitialPosition;
-    [SerializeField] GameObject goalDebugObject;
+    GameObject armColliderObject;
+    Rigidbody armRB;
+    SpringJoint armSpring;
+    [SerializeField] GameObject armColliderPrefab;
+    [SerializeField] GameObject goalDebugPrefab;
     [Header("Movement Settings")]
     [SerializeField] float speed;
     [SerializeField] float turnSpeed;
@@ -50,11 +55,11 @@ public class CharacterMovement : MonoBehaviour
     void Start()
     {
         physicalBody = GetComponent(typeof(Rigidbody)) as Rigidbody;
-        armControllerInitialPosition = armController.transform.localPosition;
-        armGoal = GameObject.Instantiate(goalDebugObject).transform;
-        // armGoal = new GameObject("Arm Goal").transform;
-        // armGoal.gameObject.AddComponent<MeshFilter>().mesh = ;
-        // armGoal.gameObject.AddComponent<MeshRenderer>();
+        armGoal = GameObject.Instantiate(goalDebugPrefab).transform;
+        armColliderObject = GameObject.Instantiate(armColliderPrefab);
+        armRB = armColliderObject.GetComponent<Rigidbody>();
+        armSpring = armColliderObject.GetComponent<SpringJoint>();
+        armSpring.connectedBody = physicalBody;
     }
 
     void Update()
@@ -87,6 +92,7 @@ public class CharacterMovement : MonoBehaviour
         UpdateAnimator(Mathf.Abs(inputs.x));
 
         Move(movement * Time.fixedDeltaTime);
+        HandleArm();
 
         if (isJumping == JumpState.True)
             isJumping = JumpState.Cooldown;
@@ -94,17 +100,10 @@ public class CharacterMovement : MonoBehaviour
 
     void LateUpdate()
     {
-        // All custom animation overriding goes here.
-        // Vector3 mousePos = Input.mousePosition;
-        // mousePos.z = 10;
-        // Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
-        // Vector3 direction = (physicalBody.position - mouseWorldPos).normalized;
-        // // armController.transform.localPosition = (armControllerInitialPosition + (direction * 3f));
-        // armController.transform.localPosition = armController.transform.InverseTransformPoint(armController.transform.position + direction);
-
-
-        // armController.transform.rotation = Quaternion.Euler(currArmRotation, 0f, 0f);
-        // currArmRotation += armRotationSpeed * Time.deltaTime;
+        if (armRB != null)
+        {
+            armController.position = armRB.position;
+        }
     }
 
     void OnAnimatorIK()
@@ -118,6 +117,7 @@ public class CharacterMovement : MonoBehaviour
                 // characterAnimator.SetLookAtPosition(armGoal.position);
 
                 AvatarIKGoal targetIKGoal = AvatarIKGoal.RightHand;
+
                 // Debug.Log("Setting IKPosition for " + targetIKGoal + " to " + armGoal.position);
                 characterAnimator.SetIKPositionWeight(targetIKGoal, 1);
                 characterAnimator.SetIKRotationWeight(targetIKGoal, 1);
@@ -164,6 +164,28 @@ public class CharacterMovement : MonoBehaviour
             // Add the jump force as an impulse.
             physicalBody.AddForce(jumpForce, ForceMode.Impulse);
             Debug.Log("Applying " + jumpForce + " force as jump " + ++jumpCount + ". Velocity is now " + physicalBody.velocity + " at time " + Time.time);
+        }
+    }
+
+    void HandleArm()
+    {
+        if (armRB != null && armSpring != null)
+        {
+            float mouseDistance = Vector3.Distance(armGoal.position, physicalBody.position);
+
+            Vector3 direction = (mouseDistance < armStretchDistance) ? (armGoal.position - physicalBody.position)
+                                                                     : (armGoal.position - physicalBody.position).normalized * armStretchDistance;
+
+            Vector3 rbGoal = physicalBody.position + direction;
+            Vector3 rbDirection = (rbGoal - armRB.position);
+
+            armRB.MovePosition(armRB.position + rbDirection * armFollowSpeed * Time.deltaTime);
+
+            float armDistance = Vector3.Distance(armRB.position, physicalBody.position);
+            armSpring.minDistance = armDistance;
+            armSpring.maxDistance = armDistance;
+
+            Debug.Log("Moving armRB to " + armRB.position);
         }
     }
 
