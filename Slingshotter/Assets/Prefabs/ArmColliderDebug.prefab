@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 4780107026391775388}
   - component: {fileID: 2981942877506426442}
   - component: {fileID: 2612723632204836662}
-  - component: {fileID: 2743842016088203841}
   - component: {fileID: 2399222650767483314}
+  - component: {fileID: 3272786804608402730}
   m_Layer: 10
   m_Name: ArmColliderDebug
   m_TagString: Untagged
@@ -89,36 +89,13 @@ Rigidbody:
   m_GameObject: {fileID: 7599972027705315404}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0
+  m_Drag: 1
   m_AngularDrag: 0.05
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 2
---- !u!145 &2743842016088203841
-SpringJoint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7599972027705315404}
-  m_ConnectedBody: {fileID: 0}
-  m_Anchor: {x: 0, y: 0, z: 0}
-  m_AutoConfigureConnectedAnchor: 0
-  m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  serializedVersion: 2
-  m_Spring: 10
-  m_Damper: 0.2
-  m_MinDistance: 0
-  m_MaxDistance: 0
-  m_Tolerance: 0.025
-  m_BreakForce: Infinity
-  m_BreakTorque: Infinity
-  m_EnableCollision: 0
-  m_EnablePreprocessing: 1
-  m_MassScale: 1
-  m_ConnectedMassScale: 1
 --- !u!135 &2399222650767483314
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -126,9 +103,21 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7599972027705315404}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b3d2ed186da27b7408e045564d71d6e2, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3272786804608402730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7599972027705315404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ee94398c5fda4946965cc136c2bd738, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
