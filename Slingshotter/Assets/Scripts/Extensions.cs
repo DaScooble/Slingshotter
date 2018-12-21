@@ -15,6 +15,19 @@ public static class Extensions
     {
         return mask == (mask | (1 << layer));
     }
+
+    /// <summary>
+    /// Maps float value between float in_min and float in_max to the corresponding value in range between float out_min and float out_max.
+    /// </summary>
+    /// <param name="in_min"></param>
+    /// <param name="in_max"></param>
+    /// <param name="out_min"></param>
+    /// <param name="out_max"></param>
+    /// <returns>float</returns>
+    public static float Map(this float x, float in_min, float in_max, float out_min, float out_max)
+    {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
 }
 
 public static class Run

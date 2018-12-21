@@ -53,8 +53,6 @@ public class ColliderHandler : MonoBehaviour
         Debug.Log("Collision! Arm velocity was " + RigidBody.velocity);
         if (listener != null)
             listener.CollisionEnter(collision);
-        // TODO: Measure the force of collision. Launch player in opposite direction with equal force(?).
-        // Perhaps threshold for arm velocity, with base force of player launch, which scales up with arm velocity.
     }
 
     void OnCollisionExit(Collision collision)

@@ -451,7 +451,7 @@ Rigidbody:
   serializedVersion: 2
   m_Mass: 1
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -515,26 +515,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 156083418}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &164537572 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3782989738109298769, guid: a93f91a0955f35546a228c2e3dc63d56,
-    type: 3}
-  m_PrefabInstance: {fileID: 3782989737790189071}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &164537578
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 164537572}
-  m_Material: {fileID: 13400000, guid: a31524fedb3d93749ac5a90c1e9d52bd, type: 2}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.25
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.05, z: 0}
 --- !u!1 &165748160
 GameObject:
   m_ObjectHideFlags: 0
@@ -652,11 +632,15 @@ MonoBehaviour:
   characterAnimator: {fileID: 240829486}
   armController: {fileID: 55026004}
   armStretchDistance: 0
+  maxArmStretchDistance: 0
   armFollowSpeed: 0
+  armLaunchDistance: 0
+  armLaunchSpeed: 0
+  armLaunchCooldown: 0
+  armLaunchTimeout: 0
   grabbableLayer:
     serializedVersion: 2
     m_Bits: 0
-  maxArmStretch: 0
   maxArmTension: 0
   armReleaseForceMultiplier: 0
   armStrength: 100
@@ -767,9 +751,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 241080146}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 0.3
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -1154,11 +1138,15 @@ MonoBehaviour:
   characterAnimator: {fileID: 0}
   armController: {fileID: 0}
   armStretchDistance: 0
+  maxArmStretchDistance: 0
   armFollowSpeed: 0
+  armLaunchDistance: 0
+  armLaunchSpeed: 0
+  armLaunchCooldown: 0
+  armLaunchTimeout: 0
   grabbableLayer:
     serializedVersion: 2
     m_Bits: 0
-  maxArmStretch: 0
   maxArmTension: 0
   armReleaseForceMultiplier: 0
   armStrength: 100
@@ -2960,9 +2948,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140757791}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 5
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -3066,11 +3054,15 @@ MonoBehaviour:
   characterAnimator: {fileID: 2146409642}
   armController: {fileID: 55026004}
   armStretchDistance: 0
+  maxArmStretchDistance: 0
   armFollowSpeed: 0
+  armLaunchDistance: 0
+  armLaunchSpeed: 0
+  armLaunchCooldown: 0
+  armLaunchTimeout: 0
   grabbableLayer:
     serializedVersion: 2
     m_Bits: 0
-  maxArmStretch: 0
   maxArmTension: 0
   armReleaseForceMultiplier: 0
   armStrength: 100
@@ -3177,46 +3169,6 @@ PrefabInstance:
     - target: {fileID: 3782989738109334577, guid: a93f91a0955f35546a228c2e3dc63d56,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: armStrength
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: armDampening
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: speed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: launchMaxForce
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: launchArmVelocityThreshold
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564709, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: m_Radius
-      value: 0.225
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564709, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: m_Height
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3782989739475564709, guid: a93f91a0955f35546a228c2e3dc63d56,
-        type: 3}
-      propertyPath: m_Center.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
