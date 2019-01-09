@@ -34,35 +34,39 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
     [SerializeField] Transform armController;
     [SerializeField] float armStretchDistance;
     [SerializeField] float maxArmStretchDistance;
+    [SerializeField] float armSpringStrength;
+    [SerializeField] float armSpringDampening;
     [SerializeField] float armFollowSpeed;
-    [SerializeField] float armLaunchDistance;
-    [SerializeField] float armLaunchSpeed;
-    [SerializeField] float armLaunchCooldown;
-    [SerializeField] float armLaunchTimeout;
     [SerializeField] LayerMask grabbableLayer;
     ArmState armState = ArmState.Default;
     // Relative position to physicalBody.
-    Vector3 currentLaunchTarget = Vector3.zero;
 
     [Header("Grab Settings")]
     [SerializeField] float maxArmTension;
     [SerializeField] float armReleaseForceMultiplier;
     [SerializeField] float armStrength;
     [SerializeField] float armDampening;
-
     Transform armGoal;
     ColliderHandler armColliderHandler;
     Rigidbody armRB;
     Rigidbody grabbed;
-    Vector3 currentTension;
-    // SpringJoint armJoint;
+    float currentTension;
     [SerializeField] GameObject armColliderPrefab;
     [SerializeField] GameObject goalDebugPrefab;
 
     [Header("Launch Settings")]
-    [SerializeField] float launchArmVelocityThreshold;
+    [SerializeField] float armLaunchDistance;
+    [SerializeField] float armLaunchSpeed;
+    [SerializeField] float armLaunchSpeedDecay;
+    [SerializeField] float armLaunchCooldown;
+    [SerializeField] float armLaunchTimeout;
+    [SerializeField] float launchMinArmVelocity;
+    [SerializeField] float launchMaxArmVelocity;
     [SerializeField] float launchMinForce;
     [SerializeField] float launchMaxForce;
+    Vector3 currentLaunchTarget = Vector3.zero;
+    Vector3 initialLaunchPosition;
+    float currentLaunchSpeed;
 
     [Header("Movement Settings")]
     [SerializeField] float speed;
@@ -91,6 +95,14 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
     void Start()
     {
         physicalBody = GetComponent(typeof(Rigidbody)) as Rigidbody;
+        SetupArm();
+    }
+
+    void SetupArm()
+    {
+        if (armGoal != null || armColliderHandler != null)
+            return;
+
         armGoal = GameObject.Instantiate(goalDebugPrefab).transform;
         armColliderHandler = GameObject.Instantiate(armColliderPrefab).GetComponent<ColliderHandler>().Initialize(grabbableLayer, this);
         armColliderHandler.RigidBody.position = physicalBody.position;
@@ -135,13 +147,13 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
     void OnAnimatorIK()
     {
-        if (grabbed != null)
-            return;
+        // if (grabbed != null)
+        //     return;
 
         // Debug.Log("Executing OnAnimatorIK!");
         if (characterAnimator != null)
         {
-            if (armGoal != null)
+            if (armRB != null)
             {
                 // characterAnimator.SetLookAtWeight(1);
                 // characterAnimator.SetLookAtPosition(armGoal.position);
@@ -151,8 +163,8 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
                 // Debug.Log("Setting IKPosition for " + targetIKGoal + " to " + armGoal.position);
                 characterAnimator.SetIKPositionWeight(targetIKGoal, 1);
                 characterAnimator.SetIKRotationWeight(targetIKGoal, 1);
-                characterAnimator.SetIKPosition(targetIKGoal, armGoal.position);
-                characterAnimator.SetIKRotation(targetIKGoal, armGoal.rotation);
+                characterAnimator.SetIKPosition(targetIKGoal, armRB.position);
+                characterAnimator.SetIKRotation(targetIKGoal, armRB.rotation);
             }
         }
     }
@@ -210,6 +222,8 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
             {
                 Destroy(armColliderHandler.GetComponent<FixedJoint>());
                 grabbed = null;
+                // Apply built up tension.
+                CollapseArmTension();
             }
         }
     }
@@ -279,18 +293,30 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
             armRB.velocity = rbDirection * armFollowSpeed;
             // armRB.AddForce(rbDirection * armFollowSpeed * Time.deltaTime, ForceMode.VelocityChange);
             // armRB.MovePosition(armRB.position + rbDirection * armFollowSpeed * Time.deltaTime);
+
+            // If the arm is stretched too far (maybe stuck?), pull them together.
+            MaintainArmDistance();
         }
         else if (armState == ArmState.Launching)
         {
             if (currentLaunchTarget == Vector3.zero)
             {
+                // initialLaunchPosition = armRB.position;
                 float mouseDistance = Vector3.Distance(armGoal.position, physicalBody.position);
                 currentLaunchTarget = (armGoal.position - physicalBody.position).normalized * armLaunchDistance;
+                // currentLaunchSpeed = armLaunchSpeed;
             }
 
             Vector3 rbGoal = physicalBody.position + currentLaunchTarget;
             Vector3 rbDirection = (rbGoal - armRB.position);
+            // float distanceToGoal = rbDirection.magnitude;
+            rbDirection = (rbDirection.magnitude < 1f) ? rbDirection : rbDirection.normalized;
+            // float percDistanceToGoal = Mathf.InverseLerp(armLaunchDistance, 0f, distanceToGoal);
 
+            // float distanceFromLaunch = (armRB.position - initialLaunchPosition).magnitude;
+            // float percDistanceFromLaunch = 1f - Mathf.InverseLerp(0f, armLaunchDistance, distanceFromLaunch);
+            // currentLaunchSpeed *= (armLaunchSpeedDecay * percDistanceFromLaunch * Time.fixedDeltaTime);
+            // Debug.Log("Percentage distance: " + percDistanceFromLaunch + ", Actual distance: " + distanceFromLaunch);
             armRB.velocity = rbDirection * armLaunchSpeed;
 
             float armDistance = Vector3.Distance(armRB.position, rbGoal);
@@ -348,40 +374,61 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
             // Gets the displacement.
             float distance = Vector3.Distance(bodyPos, armPos);
 
-            // TODO: If distance > maxArmStretch, manually move it into acceptable range somehow.
-
             distance = Mathf.Clamp(distance, armStretchDistance, maxArmStretchDistance);
             // Remaps to 0.0 - 1.0 range.
             // distance = distance.Map(armStretchDistance, maxArmStretch, 0f, 1f);
 
+            currentTension = distance.Map(armStretchDistance, maxArmStretchDistance, 0f, maxArmTension);
+
             // Maps the distance value to a 0.0 - maxArmTension range.
-            float force = distance.Map(armStretchDistance, maxArmStretchDistance, 0f, maxArmTension);
+            float force = distance * armStrength;
 
             Vector3 direction = (bodyPos - armPos).normalized;
             Vector3 velocity = physicalBody.velocity - armColliderHandler.RigidBody.velocity;
-            // Vector3 velocity2 = armColliderHandler.RigidBody.velocity - physicalBody.velocity;
 
             physicalBody.AddForce(-force * direction - velocity * armDampening);
             armColliderHandler.RigidBody.AddForce(force * direction + velocity * armDampening);
 
-
-            // distance = Mathf.Clamp(distance, armStretchDistance, maxArmStretch);
+            MaintainArmDistance();
         }
+    }
 
-        // if (grabbed != null)
-        // {
-        //     Vector3 bodyPos = physicalBody.position;
-        //     Vector3 armPos = armColliderHandler.RigidBody.position;
+    void MaintainArmDistance()
+    {
+        Vector3 bodyPos = physicalBody.position;
+        Vector3 armPos = armColliderHandler.RigidBody.position;
 
-        //     float force = Vector3.Distance(bodyPos, armPos) * armStrength;
-        //     Vector3 direction = (bodyPos - armPos).normalized;
-        //     Vector3 velocity = armColliderHandler.RigidBody.velocity;
+        float distance = Vector3.Distance(bodyPos, armPos);
+        if (distance > maxArmStretchDistance)
+        {
+            float force = distance * armSpringStrength;
 
-        //     physicalBody.AddForce(-force * direction - velocity * armDampening);
-        //     armColliderHandler.RigidBody.AddForce(force * direction + velocity * armDampening);
+            Vector3 direction = (bodyPos - armPos).normalized;
+            Vector3 velocity = physicalBody.velocity - armColliderHandler.RigidBody.velocity;
 
+            physicalBody.AddForce(-force * direction - velocity * armSpringDampening);
+            armColliderHandler.RigidBody.AddForce(force * direction + velocity * armSpringDampening);
+        }
+    }
 
-        // }
+    void CollapseArmTension()
+    {
+        Debug.Log("Collapsing arm tension with tension " + (currentTension * armReleaseForceMultiplier));
+        Vector3 bodyPos = physicalBody.position;
+        Vector3 armPos = armColliderHandler.RigidBody.position;
+
+        float distance = Vector3.Distance(bodyPos, armPos);
+        float force = distance * currentTension * armReleaseForceMultiplier;
+
+        Vector3 direction = (bodyPos - armPos).normalized;
+        Vector3 velocity = physicalBody.velocity - armColliderHandler.RigidBody.velocity;
+
+        // physicalBody.AddForce(-force * direction);
+        Debug.Log("Launching with force of " + -force);
+        physicalBody.AddForce(-force * direction, ForceMode.Impulse);
+        // armColliderHandler.RigidBody.AddForce(force * direction, ForceMode.Impulse);
+        // physicalBody.AddForce(-force * direction - velocity * armSpringDampening, ForceMode.Impulse);
+        // armColliderHandler.RigidBody.AddForce(force * direction + velocity * armSpringDampening, ForceMode.Impulse);
     }
 
     void UpdateCharacterDirection()
@@ -449,14 +496,16 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
         // float armVelocityMag = armVelocity.magnitude;
 
         float armVelocityMag = collision.relativeVelocity.magnitude;
-        Debug.Log("Checking collision with relative velocity of " + collision.relativeVelocity + " and magnitude of " + collision.relativeVelocity.magnitude + " against threshold of " + launchArmVelocityThreshold);
+        Debug.Log("Checking collision with relative velocity of " + collision.relativeVelocity + " and magnitude of " + collision.relativeVelocity.magnitude + " against threshold of " + launchMinArmVelocity);
         Debug.Log("Arm's velocity was " + armColliderHandler.RigidBody.velocity + " with magnitude of " + armColliderHandler.RigidBody.velocity.magnitude);
-        if (armVelocityMag > launchArmVelocityThreshold)
+        if (armVelocityMag > launchMinArmVelocity)
         {
-            // Vector3 direction = armVelocity.normalized;
-            // Vector3 direction = collision.impulse.normalized;
+            armVelocityMag = (armVelocityMag > launchMaxArmVelocity) ? launchMaxArmVelocity : armVelocityMag;
+            armVelocityMag = armVelocityMag.Map(launchMinArmVelocity, launchMaxArmVelocity, launchMinForce, launchMaxForce);
             Vector3 direction = collision.relativeVelocity.normalized;
-            Vector3 force = (armVelocityMag > launchMinForce) ? direction * armVelocityMag : direction * launchMinForce;
+
+            // Vector3 force = (armVelocityMag > launchMinForce) ? direction * armVelocityMag : direction * launchMinForce;
+            Vector3 force = armVelocityMag * direction;
             force = Vector3.ClampMagnitude(force, launchMaxForce);
             armColliderHandler.RigidBody.velocity = Vector3.zero;
 
@@ -466,5 +515,15 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
             Debug.Log("Added force in direction of " + (direction) + " resulting in " + (direction * launchMaxForce));
             Debug.Log("Count: " + ++armLaunchCount);
         }
+    }
+
+    public void ResetCharacter(Vector3 spawnPosition)
+    {
+        physicalBody.position = spawnPosition;
+        armState = ArmState.Default;
+        isJumping = JumpState.False;
+
+        SetupArm();
+        armColliderHandler.RigidBody.position = physicalBody.position;
     }
 }

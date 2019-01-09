@@ -864,25 +864,29 @@ MonoBehaviour:
   armController: {fileID: 3782989738109334575}
   armStretchDistance: 0.75
   maxArmStretchDistance: 2
+  armSpringStrength: 25
+  armSpringDampening: 1
   armFollowSpeed: 15
-  armLaunchDistance: 2
-  armLaunchSpeed: 25
-  armLaunchCooldown: 0.25
-  armLaunchTimeout: 0.5
   grabbableLayer:
     serializedVersion: 2
     m_Bits: 512
-  maxArmTension: 25
+  maxArmTension: 10
   armReleaseForceMultiplier: 1
-  armStrength: 10
+  armStrength: 7
   armDampening: 1
   armColliderPrefab: {fileID: 7599972027705315404, guid: cc23e01476add4940b8b20f5bd2b30bc,
     type: 3}
   goalDebugPrefab: {fileID: 3933390826231259978, guid: a9e098381f0b5744e9fa2cbf7208acb4,
     type: 3}
-  launchArmVelocityThreshold: 5
-  launchMinForce: 0
-  launchMaxForce: 7
+  armLaunchDistance: 2
+  armLaunchSpeed: 20
+  armLaunchSpeedDecay: 0.5
+  armLaunchCooldown: 0.25
+  armLaunchTimeout: 0.5
+  launchMinArmVelocity: 1
+  launchMaxArmVelocity: 25
+  launchMinForce: 1
+  launchMaxForce: 8
   speed: 5
   turnSpeed: 6
   jumpHeight: 2
