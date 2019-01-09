@@ -44,7 +44,6 @@ public class ColliderHandler : MonoBehaviour
     {
         GameObject other = collision.gameObject;
         Rigidbody otherBody = collision.rigidbody;
-        // If colliding with a grabbable object,
         if (collisionMask.Contains(other.layer) && otherBody != null)
         {
             touching.Add(otherBody);
@@ -55,12 +54,16 @@ public class ColliderHandler : MonoBehaviour
             listener.CollisionEnter(collision);
     }
 
+    void OnCollisionStay(Collision collision)
+    {
+        if (listener != null)
+            listener.CollisionEnter(collision);
+    }
+
     void OnCollisionExit(Collision collision)
     {
         GameObject other = collision.gameObject;
         Rigidbody otherBody = collision.rigidbody;
-        // If colliding with a grabbable object,
-        //  
         if (collisionMask.Contains(other.layer) && otherBody != null)
         {
             touching.Remove(otherBody);

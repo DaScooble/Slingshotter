@@ -479,7 +479,6 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
     public void CollisionEnter(Collision collision)
     {
-        Debug.Log("Collision count: " + ++armCollisionCount);
         // Ignore this stuff if grabbing onto something.
         if (grabbed != null || armState != ArmState.Launching)
             return;
