@@ -766,9 +766,9 @@ GameObject:
   - component: {fileID: 3782989738109334577}
   - component: {fileID: 3782989738099776491}
   - component: {fileID: 3782989739475564708}
-  - component: {fileID: 3782989739475564709}
   - component: {fileID: 3782989739475564710}
   - component: {fileID: 164537578}
+  - component: {fileID: 3782989739475564709}
   m_Layer: 10
   m_Name: Player_Prototype
   m_TagString: Player
@@ -829,20 +829,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
---- !u!136 &3782989739475564709
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3782989738109298769}
-  m_Material: {fileID: 13400000, guid: 4dd2e9b3e90fbeb429a713a2b4aa7ce8, type: 2}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.225
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3782989739475564710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -869,7 +855,7 @@ MonoBehaviour:
   armFollowSpeed: 15
   grabbableLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 2560
   maxArmTension: 10
   armReleaseForceMultiplier: 1
   armStrength: 7
@@ -879,16 +865,26 @@ MonoBehaviour:
   goalDebugPrefab: {fileID: 3933390826231259978, guid: a9e098381f0b5744e9fa2cbf7208acb4,
     type: 3}
   armLaunchDistance: 2
-  armLaunchSpeed: 20
+  armLaunchSpeed: 25
   armLaunchSpeedDecay: 0.5
   armLaunchCooldown: 0.25
   armLaunchTimeout: 0.5
   launchMinArmVelocity: 1
   launchMaxArmVelocity: 25
-  launchMinForce: 1
+  launchMinForce: 3
   launchMaxForce: 8
-  speed: 5
-  turnSpeed: 6
+  armLaunchDirectionModifierSpeed: 10
+  armLaunchAngleDebugPrefab: {fileID: 2334664725731788285, guid: b7038a4b5fac5494cbfc88ab4363f747,
+    type: 3}
+  baseAcceleration: 20
+  baseMaxSpeed: 5
+  groundAccelerationMod: 1
+  groundMaxSpeedMod: 1
+  airAccelerationMod: 0.6
+  airMaxSpeedMod: 1
+  grabAccelerationMod: 0.75
+  grabMaxSpeedMod: 0.75
+  turnSpeed: 12
   jumpHeight: 2
   jumpWait: 0.25
 --- !u!136 &164537578
@@ -905,6 +901,20 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.05, z: 0}
+--- !u!136 &3782989739475564709
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3782989738109298769}
+  m_Material: {fileID: 13400000, guid: 4dd2e9b3e90fbeb429a713a2b4aa7ce8, type: 2}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.225
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3782989738109298771
 GameObject:
   m_ObjectHideFlags: 0
@@ -1259,7 +1269,7 @@ GameObject:
   - component: {fileID: 3782989739497762642}
   - component: {fileID: 3782989739497762643}
   m_Layer: 10
-  m_Name: GroundCollider (1)
+  m_Name: GroundCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

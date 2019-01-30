@@ -615,7 +615,18 @@ MonoBehaviour:
   launchMaxArmVelocity: 0
   launchMinForce: 0
   launchMaxForce: 0
-  speed: 5
+  armLaunchDirectionMinMod: 0
+  armLaunchDirectionMaxMod: 0
+  armLaunchDirectionModifierSpeed: 0
+  armLaunchAngleDebugPrefab: {fileID: 0}
+  baseAcceleration: 0
+  baseMaxSpeed: 0
+  groundAccelerationMod: 0
+  groundMaxSpeedMod: 0
+  airAccelerationMod: 0
+  airMaxSpeedMod: 0
+  grabAccelerationMod: 0
+  grabMaxSpeedMod: 0
   turnSpeed: 6
   jumpHeight: 2
   jumpWait: 0.25
@@ -1067,7 +1078,18 @@ MonoBehaviour:
   launchMaxArmVelocity: 0
   launchMinForce: 0
   launchMaxForce: 0
-  speed: 5
+  armLaunchDirectionMinMod: 0
+  armLaunchDirectionMaxMod: 0
+  armLaunchDirectionModifierSpeed: 0
+  armLaunchAngleDebugPrefab: {fileID: 0}
+  baseAcceleration: 0
+  baseMaxSpeed: 0
+  groundAccelerationMod: 0
+  groundMaxSpeedMod: 0
+  airAccelerationMod: 0
+  airMaxSpeedMod: 0
+  grabAccelerationMod: 0
+  grabMaxSpeedMod: 0
   turnSpeed: 0
   jumpHeight: 2
   jumpWait: 0.25
@@ -2909,7 +2931,18 @@ MonoBehaviour:
   launchMaxArmVelocity: 0
   launchMinForce: 0
   launchMaxForce: 0
-  speed: 5
+  armLaunchDirectionMinMod: 0
+  armLaunchDirectionMaxMod: 0
+  armLaunchDirectionModifierSpeed: 0
+  armLaunchAngleDebugPrefab: {fileID: 0}
+  baseAcceleration: 0
+  baseMaxSpeed: 0
+  groundAccelerationMod: 0
+  groundMaxSpeedMod: 0
+  airAccelerationMod: 0
+  airMaxSpeedMod: 0
+  grabAccelerationMod: 0
+  grabMaxSpeedMod: 0
   turnSpeed: 6
   jumpHeight: 2
   jumpWait: 0.25
@@ -3079,13 +3112,68 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
         type: 3}
-      propertyPath: launchMinForce
-      value: 3
+      propertyPath: armLaunchDirectionModifierSpeed
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
         type: 3}
-      propertyPath: armLaunchSpeed
-      value: 25
+      propertyPath: grabMaxSpeedMod
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: grabAccelerationMod
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: airMaxSpeedMod
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: armLaunchDirectionMinMod
+      value: -45
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: armLaunchDirectionMaxMod
+      value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: airAccelerationMod
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: groundAccelerationMod
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: launchMaxForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: armReleaseForceMultiplier
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739475564710, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: maxArmTension
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739497762643, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3782989739497762643, guid: a93f91a0955f35546a228c2e3dc63d56,
+        type: 3}
+      propertyPath: m_Size.z
+      value: 0.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a93f91a0955f35546a228c2e3dc63d56, type: 3}

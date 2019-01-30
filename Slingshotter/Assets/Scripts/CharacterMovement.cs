@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Homebrew;
+using NaughtyAttributes;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -22,56 +24,116 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
         Cooling = 3
     }
 
-    [Header("Physics Settings")]
+    [BoxGroup("Physics Settings")]
     [SerializeField] Rigidbody physicalBody;
+    [BoxGroup("Physics Settings")]
     [SerializeField] BoxCollider groundCollider;
+    [BoxGroup("Physics Settings")]
     [SerializeField] LayerMask groundLayer;
 
-    [Header("Animation Settings")]
+
+
+    [BoxGroup("Animation Settings")]
     [SerializeField] Animator characterAnimator;
 
-    [Header("Arm Settings")]
+
+
+    [BoxGroup("Arm Settings")]
     [SerializeField] Transform armController;
+    [BoxGroup("Arm Settings")]
     [SerializeField] float armStretchDistance;
+    [BoxGroup("Arm Settings")]
     [SerializeField] float maxArmStretchDistance;
+    [BoxGroup("Arm Settings")]
     [SerializeField] float armSpringStrength;
+    [BoxGroup("Arm Settings")]
     [SerializeField] float armSpringDampening;
+    [BoxGroup("Arm Settings")]
     [SerializeField] float armFollowSpeed;
+    [BoxGroup("Arm Settings")]
     [SerializeField] LayerMask grabbableLayer;
     ArmState armState = ArmState.Default;
     // Relative position to physicalBody.
 
-    [Header("Grab Settings")]
+
+
+    [BoxGroup("Grab Settings")]
     [SerializeField] float maxArmTension;
+    [BoxGroup("Grab Settings")]
     [SerializeField] float armReleaseForceMultiplier;
+    [BoxGroup("Grab Settings")]
     [SerializeField] float armStrength;
+    [BoxGroup("Grab Settings")]
     [SerializeField] float armDampening;
     Transform armGoal;
     ColliderHandler armColliderHandler;
     Rigidbody armRB;
     Rigidbody grabbed;
     float currentTension;
+    [BoxGroup("Grab Settings")]
     [SerializeField] GameObject armColliderPrefab;
+    [BoxGroup("Grab Settings")]
     [SerializeField] GameObject goalDebugPrefab;
+    bool grabbing;
 
-    [Header("Launch Settings")]
+
+
+    [BoxGroup("Launch Settings")]
     [SerializeField] float armLaunchDistance;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float armLaunchSpeed;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float armLaunchSpeedDecay;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float armLaunchCooldown;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float armLaunchTimeout;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float launchMinArmVelocity;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float launchMaxArmVelocity;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float launchMinForce;
+    [BoxGroup("Launch Settings")]
     [SerializeField] float launchMaxForce;
+    [BoxGroup("Launch Settings")]
+    [SerializeField] float armLaunchDirectionMinMod;
+    [BoxGroup("Launch Settings")]
+    [SerializeField] float armLaunchDirectionMaxMod;
+    [BoxGroup("Launch Settings")]
+    [SerializeField] float armLaunchDirectionModifierSpeed;
+    [BoxGroup("Launch Settings")]
+    [SerializeField] GameObject armLaunchAngleDebugPrefab;
+    Transform armLaunchDirectionIndicator;
+    [ShowNonSerializedField]
+    float armLaunchDirectionAngleModifier;
     Vector3 currentLaunchTarget = Vector3.zero;
     Vector3 initialLaunchPosition;
     float currentLaunchSpeed;
 
-    [Header("Movement Settings")]
-    [SerializeField] float speed;
+
+
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float baseAcceleration;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float baseMaxSpeed;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float groundAccelerationMod;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float groundMaxSpeedMod;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float airAccelerationMod;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float airMaxSpeedMod;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float grabAccelerationMod;
+    [BoxGroup("Movement Settings")]
+    [SerializeField] float grabMaxSpeedMod;
+    [BoxGroup("Movement Settings")]
     [SerializeField] float turnSpeed;
+    [BoxGroup("Movement Settings")]
     [SerializeField] float jumpHeight;
+    [BoxGroup("Movement Settings")]
     [SerializeField] float jumpWait;
     JumpState isJumping = JumpState.False;
     bool canJump = true;
@@ -107,6 +169,8 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
         armColliderHandler = GameObject.Instantiate(armColliderPrefab).GetComponent<ColliderHandler>().Initialize(grabbableLayer, this);
         armColliderHandler.RigidBody.position = physicalBody.position;
         armRB = armColliderHandler.RigidBody;
+
+        armLaunchDirectionIndicator = GameObject.Instantiate(armLaunchAngleDebugPrefab).transform;
     }
 
     void Update()
@@ -127,9 +191,7 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
         UpdateAnimator(Mathf.Abs(inputs.x));
 
-        // Only be able to control the character while grounded?
-        // if (isGrounded)
-        Move(movement * Time.fixedDeltaTime);
+        HandleMovement(movement);
         HandleArm();
         HandleGrab();
 
@@ -202,25 +264,16 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
                 }
             }));
         }
-        if (Input.GetMouseButton(1))
-        {
-            if (grabbed == null)
-            {
-                Rigidbody grabbable = armColliderHandler.GetOne();
-                if (grabbable != null)
-                {
-                    grabbed = grabbable;
-                    Debug.Log("Grab grabbable object!");
-                    FixedJoint joint = armColliderHandler.GameObject.AddComponent<FixedJoint>();
-                    joint.connectedBody = grabbed;
-                }
-            }
-        }
-        else
+
+
+        grabbing = Input.GetMouseButtonDown(1);
+
+        if (!grabbing)
         {
             if (grabbed != null)
             {
                 Destroy(armColliderHandler.GetComponent<FixedJoint>());
+                armLaunchDirectionIndicator.gameObject.SetActive(false);
                 grabbed = null;
                 // Apply built up tension.
                 CollapseArmTension();
@@ -252,6 +305,36 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
         isGrounded = Physics.CheckBox(boxOffset + boxCenter, boxHalfExtents, boxOrientation, groundLayer, QueryTriggerInteraction.Ignore);
         Debug.DrawLine(boxOffset + boxCenter - boxHalfExtents, boxOffset + boxCenter + boxHalfExtents, Color.red, Time.deltaTime);
     }
+
+    private void HandleMovement(Vector3 movement)
+    {
+        // Only be able to control the character while grounded?
+        float acceleration = baseAcceleration;
+        float maxSpeed = baseMaxSpeed;
+
+        if (grabbed != null)
+        {
+            acceleration *= grabAccelerationMod;
+            maxSpeed *= grabMaxSpeedMod;
+        }
+
+        if (isGrounded)
+        {
+            acceleration *= groundAccelerationMod;
+            maxSpeed *= groundMaxSpeedMod;
+        }
+        else
+        {
+            acceleration *= airAccelerationMod;
+            maxSpeed *= airMaxSpeedMod;
+        }
+
+        if (physicalBody.velocity.x < maxSpeed)
+        {
+            Move_Force(movement * acceleration);
+        }
+    }
+
 
     void HandleJump()
     {
@@ -386,7 +469,15 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
             Vector3 direction = (bodyPos - armPos).normalized;
             Vector3 velocity = physicalBody.velocity - armColliderHandler.RigidBody.velocity;
 
-            physicalBody.AddForce(-force * direction - velocity * armDampening);
+            armLaunchDirectionAngleModifier += (-inputs.x * armLaunchDirectionModifierSpeed * Time.fixedDeltaTime);
+            armLaunchDirectionAngleModifier = Mathf.Clamp(armLaunchDirectionAngleModifier, armLaunchDirectionMinMod, armLaunchDirectionMaxMod);
+            if (armLaunchDirectionIndicator)
+            {
+                Quaternion desiredDirection = Quaternion.AngleAxis(armLaunchDirectionAngleModifier, Vector3.forward);
+                armLaunchDirectionIndicator.position = physicalBody.position + (desiredDirection * -direction);
+            }
+
+            physicalBody.AddForce(force * -direction - velocity * armDampening);
             armColliderHandler.RigidBody.AddForce(force * direction + velocity * armDampening);
 
             MaintainArmDistance();
@@ -425,10 +516,25 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
         // physicalBody.AddForce(-force * direction);
         Debug.Log("Launching with force of " + -force);
-        physicalBody.AddForce(-force * direction, ForceMode.Impulse);
+        // Vector3 inputDirection = new Vector3(inputs.x, 0f, 0f);
+        // inputDirection.Normalize();
+
+        // Vector3 actualDirection = (desiredDirection - inputDirection);
+        Quaternion desiredDirection = Quaternion.AngleAxis(armLaunchDirectionAngleModifier, Vector3.forward);
+        Vector3 actualDirection = (desiredDirection * direction).normalized;
+        // armLaunchDirectionAngleModifier += inputs.x;
+        // if (armLaunchDirectionIndicator)
+        // {
+        //     armLaunchDirectionIndicator.position = physicalBody.position + (desiredDirection * direction);
+        // }
+
+
+        physicalBody.AddForce(force * -actualDirection, ForceMode.Impulse);
         // armColliderHandler.RigidBody.AddForce(force * direction, ForceMode.Impulse);
         // physicalBody.AddForce(-force * direction - velocity * armSpringDampening, ForceMode.Impulse);
         // armColliderHandler.RigidBody.AddForce(force * direction + velocity * armSpringDampening, ForceMode.Impulse);
+
+        armLaunchDirectionAngleModifier = 0f;
     }
 
     void UpdateCharacterDirection()
@@ -452,17 +558,12 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
     public void Move_Force(Vector3 movement)
     {
-        physicalBody.AddForce(movement * speed, ForceMode.VelocityChange);
+        physicalBody.AddForce(movement, ForceMode.Acceleration);
     }
 
     public void Move(Vector3 movement)
     {
-        physicalBody.MovePosition(physicalBody.position + movement * speed);
-    }
-
-    public void Move(Vector3 movement, float speed)
-    {
-        physicalBody.MovePosition(physicalBody.position + movement * speed);
+        physicalBody.MovePosition(physicalBody.position + movement);
     }
 
     public void Shove(Vector3 movement)
@@ -472,47 +573,66 @@ public class CharacterMovement : MonoBehaviour, IColliderListener
 
     void UpdateAnimator(float xMovement)
     {
-        characterAnimator.SetFloat("Forward", xMovement, 0.1f, Time.deltaTime);
-        characterAnimator.SetBool("IsGrounded", isGrounded);
-        characterAnimator.SetBool("IsJumping", isJumping == JumpState.True);
+        // characterAnimator.SetFloat("Forward", xMovement, 0.1f, Time.deltaTime);
+        // characterAnimator.SetBool("IsGrounded", isGrounded);
+        // characterAnimator.SetBool("IsJumping", isJumping == JumpState.True);
     }
 
     public void CollisionEnter(Collision collision)
     {
-        // Ignore this stuff if grabbing onto something.
-        if (grabbed != null || armState != ArmState.Launching)
-            return;
-
-        StartArmLaunchCooldown();
-
-        // TODO: Also call this method for OnCollisionStay, so that if the arm is already colliding with an object when the arm is launched, it still launches the player.
-        // TODO: Rewrite to work better with the "arm launch" system. Instead probably based off of distance traveled? Probably inverse, actually.
-        //       Yeah. Probably more force the further the arm is from its intended destination.
-
-        // When the arm collides with something, check the velocity.
-        // If the velocity magnitude is greater than the threshold, launch the player in the opposite direction.
-        // Vector3 armVelocity = armColliderHandler.RigidBody.velocity;
-        // float armVelocityMag = armVelocity.magnitude;
-
-        float armVelocityMag = collision.relativeVelocity.magnitude;
-        Debug.Log("Checking collision with relative velocity of " + collision.relativeVelocity + " and magnitude of " + collision.relativeVelocity.magnitude + " against threshold of " + launchMinArmVelocity);
-        Debug.Log("Arm's velocity was " + armColliderHandler.RigidBody.velocity + " with magnitude of " + armColliderHandler.RigidBody.velocity.magnitude);
-        if (armVelocityMag > launchMinArmVelocity)
+        if (grabbing)
         {
-            armVelocityMag = (armVelocityMag > launchMaxArmVelocity) ? launchMaxArmVelocity : armVelocityMag;
-            armVelocityMag = armVelocityMag.Map(launchMinArmVelocity, launchMaxArmVelocity, launchMinForce, launchMaxForce);
-            Vector3 direction = collision.relativeVelocity.normalized;
+            if (grabbed == null)
+            {
+                Rigidbody grabbable = collision.rigidbody;
+                // Rigidbody grabbable = armColliderHandler.GetOne();
+                if (grabbable != null)
+                {
+                    armLaunchDirectionIndicator.gameObject.SetActive(true);
+                    grabbed = grabbable;
+                    Debug.Log("Grab grabbable object!");
+                    FixedJoint joint = armColliderHandler.GameObject.AddComponent<FixedJoint>();
+                    joint.connectedBody = grabbed;
+                }
+            }
+        }
+        else
+        {
+            // Ignore this stuff if grabbing onto something.
+            if (grabbed != null || armState != ArmState.Launching)
+                return;
 
-            // Vector3 force = (armVelocityMag > launchMinForce) ? direction * armVelocityMag : direction * launchMinForce;
-            Vector3 force = armVelocityMag * direction;
-            force = Vector3.ClampMagnitude(force, launchMaxForce);
-            armColliderHandler.RigidBody.velocity = Vector3.zero;
 
-            physicalBody.AddForce(force, ForceMode.Impulse);
-            if (collision.rigidbody)
-                collision.rigidbody.AddForceAtPosition(-force, collision.GetContact(0).point, ForceMode.Impulse);
-            Debug.Log("Added force in direction of " + (direction) + " resulting in " + (direction * launchMaxForce));
-            Debug.Log("Count: " + ++armLaunchCount);
+            StartArmLaunchCooldown();
+            // TODO: Also call this method for OnCollisionStay, so that if the arm is already colliding with an object when the arm is launched, it still launches the player.
+            // TODO: Rewrite to work better with the "arm launch" system. Instead probably based off of distance traveled? Probably inverse, actually.
+            //       Yeah. Probably more force the further the arm is from its intended destination.
+
+            // When the arm collides with something, check the velocity.
+            // If the velocity magnitude is greater than the threshold, launch the player in the opposite direction.
+            // Vector3 armVelocity = armColliderHandler.RigidBody.velocity;
+            // float armVelocityMag = armVelocity.magnitude;
+
+            float armVelocityMag = collision.relativeVelocity.magnitude;
+            Debug.Log("Checking collision with relative velocity of " + collision.relativeVelocity + " and magnitude of " + collision.relativeVelocity.magnitude + " against threshold of " + launchMinArmVelocity);
+            Debug.Log("Arm's velocity was " + armColliderHandler.RigidBody.velocity + " with magnitude of " + armColliderHandler.RigidBody.velocity.magnitude);
+            if (armVelocityMag > launchMinArmVelocity)
+            {
+                armVelocityMag = (armVelocityMag > launchMaxArmVelocity) ? launchMaxArmVelocity : armVelocityMag;
+                armVelocityMag = armVelocityMag.Map(launchMinArmVelocity, launchMaxArmVelocity, launchMinForce, launchMaxForce);
+                Vector3 direction = collision.relativeVelocity.normalized;
+
+                // Vector3 force = (armVelocityMag > launchMinForce) ? direction * armVelocityMag : direction * launchMinForce;
+                Vector3 force = armVelocityMag * direction;
+                force = Vector3.ClampMagnitude(force, launchMaxForce);
+                armColliderHandler.RigidBody.velocity = Vector3.zero;
+
+                physicalBody.AddForce(force, ForceMode.Impulse);
+                if (collision.rigidbody)
+                    collision.rigidbody.AddForceAtPosition(-force, collision.GetContact(0).point, ForceMode.Impulse);
+                Debug.Log("Added force in direction of " + (direction) + " resulting in " + (direction * launchMaxForce));
+                Debug.Log("Count: " + ++armLaunchCount);
+            }
         }
     }
 
